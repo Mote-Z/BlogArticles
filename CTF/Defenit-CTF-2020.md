@@ -549,7 +549,7 @@ Defenit{w3bd4v_0v3r_h7tp_n71m_0v3r_Sm8}
 
 ### Vulnerability
 
-- Analyze
+- Program Analysis
 - UNC,SMB and WebDav
 
 
@@ -971,7 +971,7 @@ $ curl "http://adult-js.ctf.defenit.kr/61050c6ef9c64583e828ed565ca424b8be3c585d9
 ### Vulnerability
 
 - Inject object using signedCookie
-- Method Overwrite
+- Method Overwrite in MongoDB
 - Exploit in reset cycle
 
 ### Main
@@ -1594,7 +1594,6 @@ Files include USB.ad1  and  A description file USB.ad1.txt . Use  AccessData FTK
 - Amcache.hve
 	- Process details
 	- [root]/Windows/appcompat/Programs
-
 
 
 

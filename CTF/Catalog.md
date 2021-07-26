@@ -1,5 +1,5 @@
-Title = "PlaidCTF2020  Catalog 复盘"
-description = "PlaidCTF2020上唯一一道0解的题目，需要比较多的浏览器相关的背景知识"
+Title = "PlaidCTF2020  Catalog"
+description = "PlaidCTF2020上0解的题目，需要比较多的浏览器相关的背景知识"
 tags = ["CTF"]
 publishtime = 2020-05-10T10:55:54
 lastedittime = 2020-05-10T10:55:54
