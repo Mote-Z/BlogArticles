@@ -1,8 +1,8 @@
-Title = "PlaidCTF2020  Mooz Chat 复盘"
-description = "PlaidCTF2020上的一道中间人的题目，比较新颖"
+Title = "PlaidCTF2020 —— Mooz Chat "
+description = "分析PlaidCTF2020上的一道中间人的题目，涉及到 Web + Re + Crypto ，比较有意思"
 tags = ["CTF"]
 publishtime = 2020-05-04T10:55:54
-lastedittime = 2020-05-04T10:55:54
+lastedittime = 2021-07-26T15:23:54
 uuid = "60a7b714-e7ca-4252-94c4-e944b3a2d1b7"
 -+_+-
 
@@ -22,9 +22,19 @@ Part 2 (400 pts) — 1 solves   pasten
 
 **知识点**
 
-- Part1: 命令注入、JWT泄露
+- Part1: 命令注入、JWT泄露导致Token伪造
 
 - Part2：中间人攻击获取数据包、64 bit Diffie-Hellman （使用GFNS算法分解）
+
+
+相关信息
+```
+https://github.com/sibears/IDAGolangHelper    // IDA GO反编译插件
+https://github.com/gorilla/mux  // 题目使用mux框架做路由
+
+https://github.com/aiortc/aiortc   // 实现中间人所使用的库，aiortc的安装有点坑
+https://en.wikipedia.org/wiki/General_number_field_sieve //GNFS求解离散对数算法
+```
 
 
 
@@ -49,20 +59,9 @@ App_handleRequest（main_handleAdminRooms， /api/rooms）
 App_handleRequest（main_handleAdminMessages， /api/messages）
 ```
 
-相关信息
-
-```
-https://github.com/sibears/IDAGolangHelper    // IDA GO插件
-https://github.com/gorilla/mux  // 题目使用mux框架做路由
-
-https://github.com/aiortc/aiortc   // 实现中间人所使用的库
-aiortc的安装有点坑
-https://en.wikipedia.org/wiki/General_number_field_sieve //GNFS求解离散对数算法
-```
 
 
-
-## Part 1
+## Part 1 命令注入、JWT泄露导致Token伪造
 
 ### 漏洞点
 
@@ -194,9 +193,9 @@ def get_messages():
 
 
 
-## Part 2
+## Part 2 中间人攻击获取数据包、64 bit Diffie-Hellman （使用GFNS算法分解）
 
-现在已经可以登录`tomnook`账户了，通过 `/api/rooms `获取房间列表
+现在已经可以登录`tomnook`账户了，通过 `/api/rooms `可以获取房间列表
 
 ```
 [{"_id": "000000000000000000000000", "host": "timmy_fc87dfa4", "room": "shop_c0ddd565"}, {"_id": "000000000000000000000000", "host": "timmy_446c2ede", "room": "shop_9415eba1"}]
@@ -566,4 +565,4 @@ open("video.webm", "wb").write(data)
 
 ## 总结
 
-比赛的时候没来得及看这道题（看了也做不出来 :(  ，赛后复盘，觉得这道题目考察的能力比较综合，涉及到 Web + Re + Crypto ，而且中间人的点出在web里是比较新颖的一个点了。
+这道题目考察的能力比较综合，涉及到 Web + Re + Crypto ，有一定难度。
