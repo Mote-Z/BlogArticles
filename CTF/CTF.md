@@ -1,7 +1,7 @@
 
 
 Title = "CTF"
-description = "CTF | 题目复现记录"
+description = "CTF题目复现记录"
 tags = ["CTF"]
 publishtime = 2021-07-26T16:14:00
 lastedittime = 2021-07-26T16:14:00
@@ -41,22 +41,18 @@ uuid = "835dee22-8fff-43c2-bd43-6ac8c1e45409"
 
     > https://blog.wangtuntun.com/articles/b21e18dd-0a44-4b99-81e1-ad9c76e4c43f#:~:text=Pooot
 
-	- Dogooos
-		- Python模板注入
+    - Dogooos
+    	- Python模板注入
 
     > https://blog.wangtuntun.com/articles/b21e18dd-0a44-4b99-81e1-ad9c76e4c43f#:~:text=Dogooos
 
-	- OOOnline Course
-		- Sqli Injection
-		- linux proc
+    - OOOnline Course
+    	- Sqli Injection
+    	- linux proc
 
     > https://blog.wangtuntun.com/articles/b21e18dd-0a44-4b99-81e1-ad9c76e4c43f#:~:text=OOOnline%20Course
 
-	- OOOnline Course
-		- Sqli Injection
-		- linux proc
-
-    > https://blog.wangtuntun.com/articles/b21e18dd-0a44-4b99-81e1-ad9c76e4c43f#:~:text=OOOnline%20Course
+    
 
 
 - 【Defenit CTF 2020】
