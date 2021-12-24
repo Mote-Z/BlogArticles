@@ -110,7 +110,7 @@ settings->Build, Execution, Deployment->Docker
 
 - docker的守护进程并没有监听2375
 
-```
+```json
 修改/etc/docker/daemon.json为
 {
   "registry-mirrors": [
@@ -124,6 +124,15 @@ settings->Build, Execution, Deployment->Docker
 ```
 
 ![](https://blog-1301895608.cos.ap-guangzhou.myqcloud.com/img2/20211224112854.png)
+
+- 停止docker daemon并指定remote api绑定端口
+
+```bash
+service docker stop
+docker -d -H unix:///var/run/docker.sock -H 127.0.0.1:2375
+```
+
+
 
 2. 设置php cli interpreter
 
