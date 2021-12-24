@@ -2,7 +2,7 @@ Title = "Defcon CTF Qual 2020  writeup "
 
 description = "Defcon 2020 Qual 的 web"
 
-tags = ["CTF","Web"] 
+tags = ["CTF","WriteUp"] 
 
 publishtime = 2020-05-21T00:03:54 
 lastedittime = 2020-05-21T00:03:54 

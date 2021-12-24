@@ -2,7 +2,7 @@
 
 Title = "细说Java动态代理"
 description = "Java"
-tags = ["Web","Security"]
+tags = ["Web","Java"]
 publishtime = 2021-08-27T00:15:00
 lastedittime = 2021-08-28T17:03:00
 uuid = "9f8d7e65-5313-4d20-9da4-1e5a10940c46"

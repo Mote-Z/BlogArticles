@@ -2,7 +2,7 @@ Title = "Defenit CTF 2020  writeup "
 
 description = "Defenit CTF 2020  Writeup   Good designed!!"
 
-tags = ["CTF","Web","Forensics"] 
+tags = ["CTF","WriteUp"] 
 
 publishtime = 2020-06-08T00:20:54 
 lastedittime = 2020-06-08T00:20:54 

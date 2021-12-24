@@ -1,6 +1,6 @@
 Title = "SQL注入"
 description = "SQL注入"
-tags = ["Web","Security"]
+tags = ["Web","SQL Injection"]
 publishtime = 2021-07-27T00:15:00
 lastedittime = 2021-08-28T17:03:00
 uuid = "5134c576-2e83-4e1e-9b8f-cb6bd63bdc65"

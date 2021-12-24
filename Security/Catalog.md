@@ -1,6 +1,6 @@
 Title = "PlaidCTF2020  Catalog"
 description = "PlaidCTF2020上0解的题目，需要比较多的浏览器相关的背景知识"
-tags = ["CTF"]
+tags = ["CTF","WriteUp"]
 publishtime = 2020-05-10T10:55:54
 lastedittime = 2020-05-10T10:55:54
 uuid = "59eff919-16b0-4d3c-8797-d5f92c9046dc"

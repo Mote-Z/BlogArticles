@@ -1,10 +1,11 @@
 Title = "Django  Sessions 伪造"
 description = "对Django Sessions的研究记录"
-tags = ["Web","Security","Python"]
+tags = ["Web","Python","Django"]
 publishtime = 2020-04-29T13:54:54
 lastedittime = 2020-04-29T13:54:54
 uuid = "b6d1f1e4-c77f-4c67-b18d-56478eb8ed4c"
 -+_+-
+
 ## 场景
 
 已知或泄露SECRET_KEY

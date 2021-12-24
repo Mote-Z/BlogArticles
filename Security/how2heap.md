@@ -1,6 +1,6 @@
 Title = "how2heap调试过程"
 description = "调试how2heap过程的记录"
-tags = ["Pwn","Security"]
+tags = ["Pwn","Heap"]
 publishtime = 2020-05-15T13:54:54
 lastedittime = 2020-05-15T13:54:54
 uuid = "68fa52d9-fe8b-4f76-b72b-8b2addc7466a"

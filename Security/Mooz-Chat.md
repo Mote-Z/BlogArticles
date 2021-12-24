@@ -1,6 +1,6 @@
 Title = "PlaidCTF2020 —— Mooz Chat "
 description = "分析PlaidCTF2020上的一道中间人的题目，涉及到 Web + Re + Crypto ，比较有意思"
-tags = ["CTF"]
+tags = ["CTF","WriteUp"]
 publishtime = 2020-05-04T10:55:54
 lastedittime = 2021-07-26T15:23:54
 uuid = "60a7b714-e7ca-4252-94c4-e944b3a2d1b7"

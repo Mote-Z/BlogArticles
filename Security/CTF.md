@@ -2,7 +2,7 @@
 
 Title = "CTF"
 description = "CTF题目复现记录"
-tags = ["CTF"]
+tags = ["CTF","WriteUp"]
 publishtime = 2021-07-26T16:14:00
 lastedittime = 2021-08-12T09:31:00
 uuid = "835dee22-8fff-43c2-bd43-6ac8c1e45409"

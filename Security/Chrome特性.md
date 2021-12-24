@@ -1,6 +1,6 @@
 Title = "Chrome 特性 "
 description = "在CTF中出题人往往会关注浏览器更新的一些新特性，本文尝试做一些记录"
-tags = ["浏览器","Web"]
+tags = ["浏览器","Chrome"]
 publishtime = 2020-05-10T10:55:54
 lastedittime = 2020-05-10T10:55:54
 uuid = "1b822185-3689-4b06-a273-dca00f397860"
