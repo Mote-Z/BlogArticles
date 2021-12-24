@@ -128,8 +128,7 @@ settings->Build, Execution, Deployment->Docker
 - 停止docker daemon并指定remote api绑定端口
 
 ```bash
-service docker stop
-docker -d -H unix:///var/run/docker.sock -H 127.0.0.1:2375
+dockerd -H tcp://0.0.0.0:2375
 ```
 
 
